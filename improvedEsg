@@ -1,0 +1,137 @@
+import simpy
+import random
+import matplotlib.pyplot as plt
+import pandas as pd
+from transformers import pipeline
+
+# Initialize LLM pipeline (replace with a stronger model or API call if needed)
+model = pipeline("text-generation", model="google/flan-t5-small")
+
+class ManufacturingLine:
+    """Simulates a production line with ESG impact"""
+    def __init__(self, env):
+        self.env = env
+        self.machine1 = simpy.Resource(env, capacity=1)
+        self.machine2 = simpy.Resource(env, capacity=1)
+        self.energy_usage = 0
+        self.emissions = 0
+        self.social_compliance = 100  # Starts at 100% compliance
+
+    def process_component(self, name):
+        """Simulates a component being processed"""
+        with self.machine1.request() as request1:
+            yield request1
+            process_time = random.uniform(2, 5)
+            self.energy_usage += process_time * 10
+            self.emissions += process_time * 0.5
+            yield self.env.timeout(process_time)
+
+        with self.machine2.request() as request2:
+            yield request2
+            process_time = random.uniform(1, 4)
+            self.energy_usage += process_time * 8
+            self.emissions += process_time * 0.3
+            yield self.env.timeout(process_time)
+
+        # Randomly reduce social compliance
+        if random.random() < 0.1:
+            self.social_compliance -= 5
+
+class IoTSensors:
+    """Simulates IoT sensors collecting ESG data"""
+    def __init__(self, manufacturing_line):
+        self.manufacturing_line = manufacturing_line
+
+    def collect_data(self):
+        return {
+            "energy_usage": self.manufacturing_line.energy_usage,
+            "emissions": self.manufacturing_line.emissions,
+            "social_compliance": self.manufacturing_line.social_compliance
+        }
+
+class AssetAdministrationShell:
+    """Simulates AAS controlling production based on ESG insights"""
+    def adjust_production(self, action):
+        if action == "reduce_speed":
+            print("AAS: Reducing machine speed to lower energy consumption.")
+        elif action == "eco_mode":
+            print("AAS: Activating eco mode to minimize emissions.")
+        elif action == "increase_checks":
+            print("AAS: Increasing worker safety compliance checks.")
+
+class LLMController:
+    """Integrates LLM for ESG decision-making"""
+    def __init__(self, aas):
+        self.aas = aas
+
+    def analyze_and_adjust(self, esg_data):
+        """Uses LLM to analyze ESG data and recommend actions"""
+        prompt = f"""
+        ESG Data Report:
+        - Energy Usage: {esg_data['energy_usage']} kWh
+        - Emissions: {esg_data['emissions']} kg CO2
+        - Social Compliance: {esg_data['social_compliance']}%
+
+        What actions should be taken to improve ESG compliance?
+        Provide actionable recommendations.
+        """
+
+        response = model(prompt, max_length=100)
+        actions = response[0]['generated_text']
+        print("LLM Recommendations:", actions)
+
+        if "reduce speed" in actions.lower():
+            self.aas.adjust_production("reduce_speed")
+        if "eco mode" in actions.lower():
+            self.aas.adjust_production("eco_mode")
+        if "increase safety" in actions.lower():
+            self.aas.adjust_production("increase_checks")
+
+        return actions
+
+def run_simulation():
+    env = simpy.Environment()
+    manufacturing_line = ManufacturingLine(env)
+    sensors = IoTSensors(manufacturing_line)
+    aas = AssetAdministrationShell()
+    llm_controller = LLMController(aas)
+
+    data = {"Cycle": [], "Energy Usage": [], "Emissions": [], "Social Compliance": []}
+
+    for i in range(10):
+        env.process(manufacturing_line.process_component(f"Component-{i}"))
+        env.run()
+
+        esg_data = sensors.collect_data()
+        print(f"Cycle {i + 1} - ESG Data: {esg_data}")
+
+        actions = llm_controller.analyze_and_adjust(esg_data)
+
+        data["Cycle"].append(i + 1)
+        data["Energy Usage"].append(esg_data["energy_usage"])
+        data["Emissions"].append(esg_data["emissions"])
+        data["Social Compliance"].append(esg_data["social_compliance"])
+
+        print("-" * 50)
+
+    df = pd.DataFrame(data)
+    fig, ax1 = plt.subplots()
+
+    ax1.set_xlabel('Cycle')
+    ax1.set_ylabel('Energy Usage (kWh) / Emissions (kg CO2)', color='tab:red')
+    ax1.plot(df["Cycle"], df["Energy Usage"], label="Energy Usage", color='r', marker='o')
+    ax1.plot(df["Cycle"], df["Emissions"], label="Emissions", color='g', marker='s')
+    ax1.tick_params(axis='y', labelcolor='tab:red')
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Social Compliance (%)', color='tab:blue')
+    ax2.plot(df["Cycle"], df["Social Compliance"], label="Social Compliance", color='b', marker='^')
+    ax2.tick_params(axis='y', labelcolor='tab:blue')
+
+    fig.tight_layout()
+    plt.title("ESG Metrics Over Simulation Cycles")
+    plt.legend()
+    plt.show()
+
+if __name__ == "__main__":
+    run_simulation()

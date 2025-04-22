@@ -1,0 +1,429 @@
+'''The model will include:
+
+    Manufacturing Line Simulation using SimPy
+    Simulated ESG Sensor Data (Energy, Emissions, Social Compliance)
+    Integration with an LLM-based Decision Engine
+    Feedback Loops for Adaptive Learning
+
+
+Step-by-Step Implementation
+
+    Define the Manufacturing Line:
+        We model a production process using SimPy where machines process items sequentially.
+        Simulated IoT sensors will generate energy consumption, emissions, and social compliance data.
+
+    Implement ESG Monitoring:
+        Sensors will record energy usage, emissions, and safety compliance and update real-time metrics.
+
+    LLM-driven ESG Control:
+        An LLM-based decision engine will evaluate ESG compliance.
+        If thresholds are exceeded, it will adjust machine settings dynamically.
+
+    Feedback and Learning:
+        The LLM learns from historical ESG performance to improve future decisions.
+
+'''
+
+# # Define the Manufacturing Line Model
+
+# import simpy
+# import random
+
+# # ---------------------------
+# # Simulation Parameters
+# # ---------------------------
+# RANDOM_SEED = 42
+# PRODUCTION_TIME = 5  # Time per product
+# SIM_TIME = 100  # Total simulation time
+# ENERGY_LIMIT = 100  # Max allowed energy usage per cycle
+# EMISSIONS_LIMIT = 50  # Max allowed emissions per cycle
+# SOCIAL_COMPLIANCE_THRESHOLD = 90  # Min compliance score
+
+# random.seed(RANDOM_SEED)
+
+# # ---------------------------
+# # ESG Sensor Simulation
+# # ---------------------------
+# def generate_esg_data():
+#     """Simulate IoT sensor data for ESG metrics."""
+#     return {
+#         'energy_usage': random.randint(80, 120),
+#         'emissions': random.randint(40, 70),
+#         'social_compliance': random.randint(85, 100)
+#     }
+
+# # ---------------------------
+# # LLM Decision Engine
+# # ---------------------------
+# def llm_decision_making(esg_data):
+#     """Simulate an LLM analyzing ESG data and making control decisions."""
+#     decision = {
+#         'adjust_speed': False,
+#         'reduce_energy': False
+#     }
+    
+#     if esg_data['energy_usage'] > ENERGY_LIMIT:
+#         decision['reduce_energy'] = True
+    
+#     if esg_data['emissions'] > EMISSIONS_LIMIT:
+#         decision['adjust_speed'] = True
+    
+#     return decision
+
+# # ---------------------------
+# # Manufacturing Line Simulation
+# # ---------------------------
+# class ManufacturingLine:
+#     def __init__(self, env):
+#         self.env = env
+#         self.process = env.process(self.run())
+
+#     def run(self):
+#         while True:
+#             esg_data = generate_esg_data()
+#             print(f"Time {self.env.now}: ESG Data -> {esg_data}")
+            
+#             decision = llm_decision_making(esg_data)
+            
+#             if decision['adjust_speed']:
+#                 print("⚠️ Adjusting machine speed to reduce emissions!")
+#             if decision['reduce_energy']:
+#                 print("⚡ Reducing energy consumption!")
+            
+#             yield self.env.timeout(PRODUCTION_TIME)
+
+# # ---------------------------
+# # Run Simulation
+# # ---------------------------
+# def run_simulation():
+#     env = simpy.Environment()
+#     factory = ManufacturingLine(env)
+#     env.run(until=SIM_TIME)
+
+# if __name__ == "__main__":
+#     run_simulation()
+
+
+
+# #Simulating IoT Sensors for ESG Metrics: These sensors collect energy usage, emissions, and social compliance data.
+
+# class IoTSensors:
+#     """Simulates IoT sensors collecting ESG metrics"""
+#     def __init__(self, manufacturing_line):
+#         self.manufacturing_line = manufacturing_line
+
+#     def collect_data(self):
+#         return {
+#             "energy_usage": self.manufacturing_line.energy_usage,
+#             "emissions": self.manufacturing_line.emissions,
+#             "social_compliance": self.manufacturing_line.social_compliance
+#         }
+    
+
+
+# #LLM-Driven ESG Decision Making:For simplicity, we use a rule-based system to simulate an LLM's decision-making. In real cases, an LLM like GPT-4 could be fine-tuned on ESG guidelines.
+
+# class LLMController:
+#     """Simulates an AI-driven ESG decision engine"""
+#     def __init__(self, aas):
+#         self.aas = aas
+
+#     def analyze_and_adjust(self, esg_data):
+#         """Analyzes ESG data and returns control commands"""
+#         actions = []
+
+#         if esg_data["energy_usage"] > 50:
+#             actions.append("Reduce machine speed")
+#             self.aas.adjust_production("reduce_speed")
+
+#         if esg_data["emissions"] > 10:
+#             actions.append("Switch to eco mode")
+#             self.aas.adjust_production("eco_mode")
+
+#         if esg_data["social_compliance"] < 90:
+#             actions.append("Increase safety checks")
+#             self.aas.adjust_production("increase_checks")
+
+#         return actions
+    
+
+#     #Integrating with AAS (Asset Administration Shell)AAS controls the system based on LLM decisions.
+
+
+# class AssetAdministrationShell:
+#     """Simulates an AAS controlling the manufacturing process"""
+#     def adjust_production(self, action):
+#         if action == "reduce_speed":
+#             print("AAS: Reducing machine speed to lower energy consumption.")
+#         elif action == "eco_mode":
+#             print("AAS: Activating eco mode to minimize emissions.")
+#         elif action == "increase_checks":
+#             print("AAS: Increasing worker safety compliance checks.")
+
+
+
+
+# #Running the Simulation: We put everything together and run multiple cycles
+
+
+# def run_simulation():
+#     env = simpy.Environment()
+#     manufacturing_line = ManufacturingLine(env)
+#     sensors = IoTSensors(manufacturing_line)
+#     aas = AssetAdministrationShell()
+#     llm_controller = LLMController(aas)
+
+#     for i in range(10):  # Simulating 10 production cycles
+#         print(f"-----> {type(manufacturing_line)}")
+#         env.process(manufacturing_line.process_component(f"Component-{i}"))
+#         env.run()
+
+#         # Collect ESG data
+#         esg_data = sensors.collect_data()
+#         print(f"Cycle {i + 1} - ESG Data: {esg_data}")
+
+#         # LLM makes decisions based on ESG data
+#         actions = llm_controller.analyze_and_adjust(esg_data)
+#         if actions:
+#             print(f"Actions taken: {actions}")
+#         else:
+#             print("No adjustments needed.")
+
+#         print("-" * 40)
+
+# if __name__ == "__main__":
+#     run_simulation()
+
+
+'''
+Explanation of What’s Happening
+
+    Manufacturing Simulation
+        A virtual production line processes 10 components.
+        Machines consume energy and produce emissions.
+        Social compliance is randomly affected.
+
+    ESG Monitoring
+        IoT sensors collect data on energy use, emissions, and compliance.
+
+    LLM-Controlled ESG Adjustments
+        The AI (simulated as a rule-based system) evaluates ESG data.
+        If energy consumption is too high, it reduces machine speed.
+        If emissions are too high, it activates eco mode.
+        If social compliance drops, it increases safety checks.
+
+    AAS Adjusts Production
+        The Asset Administration Shell (AAS) receives LLM decisions.
+        It modifies machine behavior dynamically to optimize ESG compliance.
+
+Future Enhancements
+
+This basic framework can be improved by:
+
+    Replacing rule-based logic with an actual LLM (like GPT-4)
+    Implementing reinforcement learning to fine-tune ESG decisions dynamically.
+    Using OpenModelica for a physics-based simulation of energy and emissions.
+    Adding visualization using Matplotlib to track ESG trends over time.
+
+Summary
+
+This SimPy-based model demonstrates how LLM-driven ESG control can optimize a manufacturing process. It continuously monitors, analyzes, and adjusts production to improve energy efficiency, reduce emissions, and maintain social compliance.
+
+
+
+'''
+
+'''
+We'll enhance our simulation with:
+
+    Real-time visualization using Matplotlib to track ESG metrics over time.
+    LLM API call (e.g., OpenAI's GPT-4) to replace rule-based decisions with AI-generated recommendations.
+
+'''
+
+
+#Modify the Simulation with Real-Time Visualization    We'll update the simulation to plot ESG metrics dynamically.
+
+
+
+import simpy
+import random
+import matplotlib.pyplot as plt
+import pandas as pd
+from transformers import pipeline
+
+# Use an open-source model
+#model = pipeline("text-generation", model="mistral-7b-instruct-v0.1")
+model = pipeline("text-generation", model="google/flan-t5-small")
+
+from transformers import pipeline
+
+
+response = model("What is AI?", max_length=100)
+print(response)
+
+class ManufacturingLine:
+    """Simulates a production line with ESG impact"""
+    def __init__(self, env):
+        self.env = env
+        self.machine1 = simpy.Resource(env, capacity=1)
+        self.machine2 = simpy.Resource(env, capacity=1)
+        self.energy_usage = 0
+        self.emissions = 0
+        self.social_compliance = 100  # Starts at 100% compliance
+
+    def process_component(self, name):
+        """Simulates a component being processed"""
+        with self.machine1.request() as request1:
+            yield request1
+            process_time = random.uniform(2, 5)
+            self.energy_usage += process_time * 10
+            self.emissions += process_time * 0.5
+            yield self.env.timeout(process_time)
+
+        with self.machine2.request() as request2:
+            yield request2
+            process_time = random.uniform(1, 4)
+            self.energy_usage += process_time * 8
+            self.emissions += process_time * 0.3
+            yield self.env.timeout(process_time)
+
+        # Randomly reduce social compliance
+        if random.random() < 0.1:
+            self.social_compliance -= 5
+
+class IoTSensors:
+    """Simulates IoT sensors collecting ESG data"""
+    def __init__(self, manufacturing_line):
+        self.manufacturing_line = manufacturing_line
+
+    def collect_data(self):
+        return {
+            "energy_usage": self.manufacturing_line.energy_usage,
+            "emissions": self.manufacturing_line.emissions,
+            "social_compliance": self.manufacturing_line.social_compliance
+        }
+
+class AssetAdministrationShell:
+    """Simulates AAS controlling production based on ESG insights"""
+    def adjust_production(self, action):
+        if action == "reduce_speed":
+            print("AAS: Reducing machine speed to lower energy consumption.")
+        elif action == "eco_mode":
+            print("AAS: Activating eco mode to minimize emissions.")
+        elif action == "increase_checks":
+            print("AAS: Increasing worker safety compliance checks.")
+
+class LLMController:
+    """Integrates Mistral-7B-Instruct for ESG decision-making"""
+    def __init__(self, aas):
+        self.aas = aas
+
+    def analyze_and_adjust(self, esg_data):
+        """Uses Mistral-7B-Instruct to analyze ESG data and recommend actions"""
+        prompt = f"""
+        ESG Data Report:
+        - Energy Usage: {esg_data['energy_usage']} kWh
+        - Emissions: {esg_data['emissions']} kg CO2
+        - Social Compliance: {esg_data['social_compliance']}%
+
+        What actions should be taken to improve ESG compliance?
+        Provide actionable recommendations.
+        """
+
+        response = model(prompt, max_length=100)
+        actions = response[0]['generated_text']
+        print("Mistral-7B-Instruct Recommendations:", actions)
+
+        # Simulated action execution based on response
+        if "reduce speed" in actions.lower():
+            self.aas.adjust_production("reduce_speed")
+        if "eco mode" in actions.lower():
+            self.aas.adjust_production("eco_mode")
+        if "increase safety" in actions.lower():
+            self.aas.adjust_production("increase_checks")
+
+        return actions
+
+def run_simulation():
+    env = simpy.Environment()
+    manufacturing_line = ManufacturingLine(env)
+    sensors = IoTSensors(manufacturing_line)
+    aas = AssetAdministrationShell()
+    llm_controller = LLMController(aas)
+
+    # Data storage for visualization
+    data = {"Cycle": [], "Energy Usage": [], "Emissions": [], "Social Compliance": []}
+
+    for i in range(10):  # Run 10 production cycles
+        env.process(manufacturing_line.process_component(f"Component-{i}"))
+        env.run()
+
+        # Collect ESG data
+        esg_data = sensors.collect_data()
+        print(f"Cycle {i + 1} - ESG Data: {esg_data}")
+
+        # LLM makes decisions
+        actions = llm_controller.analyze_and_adjust(esg_data)
+
+        # Store data for visualization
+        data["Cycle"].append(i + 1)
+        data["Energy Usage"].append(esg_data["energy_usage"])
+        data["Emissions"].append(esg_data["emissions"])
+        data["Social Compliance"].append(esg_data["social_compliance"])
+
+        print("-" * 50)
+
+    # Convert data to a DataFrame and plot
+    df = pd.DataFrame(data)
+    fig, ax1 = plt.subplots()
+
+    ax1.set_xlabel('Cycle')
+    ax1.set_ylabel('Energy Usage (kWh) / Emissions (kg CO2)', color='tab:red')
+    ax1.plot(df["Cycle"], df["Energy Usage"], label="Energy Usage", color='r', marker='o')
+    ax1.plot(df["Cycle"], df["Emissions"], label="Emissions", color='g', marker='s')
+    ax1.tick_params(axis='y', labelcolor='tab:red')
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Social Compliance (%)', color='tab:blue')
+    ax2.plot(df["Cycle"], df["Social Compliance"], label="Social Compliance", color='b', marker='^')
+    ax2.tick_params(axis='y', labelcolor='tab:blue')
+
+    fig.tight_layout()
+    plt.title("ESG Metrics Over Simulation Cycles")
+    plt.legend()
+    plt.show()
+
+if __name__ == "__main__":
+    run_simulation()
+
+'''
+What’s New in This Version?
+1. Real-time Visualization
+
+    Tracks energy usage, emissions, and social compliance over time.
+    Uses Matplotlib to create a dynamic plot.
+
+2. GPT-4 ESG Decision-Making
+
+    Uses OpenAI’s GPT-4 API to analyze ESG data and generate recommendations.
+    Dynamically adjusts production settings based on LLM output.
+    Simulated AAS response executes actions like reducing speed, enabling eco-mode, or increasing safety compliance.
+
+Expected Output
+
+    GPT-4 generates ESG improvement actions
+    Example:
+
+GPT-4 Recommendations: Reduce energy usage by 15%. Switch to eco mode.
+AAS: Activating eco mode to minimize emissions.
+
+Real-time Visualization
+
+    Energy Usage (Red)
+    Emissions (Green)
+    Social Compliance (Blue)
+    Each metric updates across 10 cycles.
+
+
+'''

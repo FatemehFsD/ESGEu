@@ -1,0 +1,337 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''Step 1: Define the Simulation Environment
+
+We will use SimPy to model a production line and simulate IoT sensors for ESG data collection.'''
+
+import torch
+print(torch.cuda.is_available())  # Should return True if GPU is detected
+print(torch.__version__)  # Should be 2.5.1+cu121
+
+
+'''1.2 Define the Manufacturing Line Model
+
+We will simulate a production line that has machines consuming energy, emitting pollutants, and ensuring safety compliance.
+This script simulates a production line that generates energy consumption, emissions, and social compliance scores over time'''
+
+
+import simpy
+import random
+import pandas as pd
+import random
+
+
+# Constants
+SIM_TIME = 100  # Total simulation time
+ENERGY_THRESHOLD = 50  # Max allowed energy consumption per cycle
+EMISSIONS_THRESHOLD = 30  # Max allowed emissions per cycle
+
+class ManufacturingLine:
+    def __init__(self, env):
+        self.env = env
+        self.energy_consumption = 0
+        self.emissions = 0
+        self.social_compliance_score = 100  # Starts at 100, decreases with safety issues
+        self.process = env.process(self.run())
+
+    def run(self):
+        """Simulates a production line that runs indefinitely, generating ESG data."""
+        while True:
+            cycle_time = random.uniform(1, 5)  # Random production cycle time
+            yield self.env.timeout(cycle_time)
+
+            # Simulated ESG data
+            self.energy_consumption = random.randint(40, 60)
+            self.emissions = random.randint(20, 40)
+            self.social_compliance_score -= random.choice([0, 1, 2])  # Safety issues occur randomly
+
+            print(f"[Time {self.env.now}] Energy: {self.energy_consumption}, Emissions: {self.emissions}, Compliance: {self.social_compliance_score}")
+
+# Initialize simulation
+env = simpy.Environment()
+production_line = ManufacturingLine(env)
+env.run(until=SIM_TIME)
+
+
+'''Step 2: Integrate LLM with AAS
+
+Now, we integrate an LLM (like an open-source model) to analyze the ESG data and provide control decisions.
+2.1 Define the LLM-Based ESG Decision-Making
+
+For this, we assume a local LLM API (gpt-4) that interprets the data.
+
+This function sends ESG data to the LLM and returns control decisions (e.g., reducing energy usage, adjusting machine parameters).'''
+
+import openai
+
+# Function to simulate LLM decision-making
+def llm_analyze_and_decide(energy, emissions, compliance):
+    prompt = f"""
+    Analyze the following ESG metrics:
+    - Energy consumption: {energy}
+    - Emissions: {emissions}
+    - Social compliance score: {compliance}
+    
+    Determine whether adjustments should be made to reduce energy consumption and emissions.
+    Recommend a control action such as lowering machine speed, scheduling maintenance, or improving safety.
+    """
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "system", "content": "You are an ESG compliance assistant."},
+                  {"role": "user", "content": prompt}]
+    )
+
+    return response["choices"][0]["message"]["content"]
+
+# Example usage
+decision = llm_analyze_and_decide(energy=55, emissions=35, compliance=90)
+print("LLM Decision:", decision)
+'''
+
+This function sends ESG data to the LLM and returns control decisions (e.g., reducing energy usage, adjusting machine parameters).
+Step 3: Implement Feedback Loops for Adaptive Learning
+
+We modify the simulation to adjust machine speed based on LLM feedback.
+
+'''
+
+class SmartManufacturingLine(ManufacturingLine):
+    def run(self):
+        """Runs the production process with dynamic adjustments."""
+        while True:
+            cycle_time = random.uniform(1, 5)
+            yield self.env.timeout(cycle_time)
+            
+            # Simulated ESG data
+            self.energy_consumption = random.randint(40, 60)
+            self.emissions = random.randint(20, 40)
+            self.social_compliance_score -= random.choice([0, 1, 2])
+            
+            print(f"[Time {self.env.now}] Energy: {self.energy_consumption}, Emissions: {self.emissions}, Compliance: {self.social_compliance_score}")
+            
+            # LLM makes adjustments
+            decision = llm_analyze_and_decide(self.energy_consumption, self.emissions, self.social_compliance_score)
+            print("LLM Decision:", decision)
+            
+            # Example: If LLM suggests reducing energy, adjust the machine speed
+            if "reduce speed" in decision:
+                cycle_time *= 1.2  # Increase cycle time (slower speed)
+
+# Run the new simulation
+env = simpy.Environment()
+smart_production_line = SmartManufacturingLine(env)
+env.run(until=SIM_TIME)
+'''
+he system now dynamically adjusts machine speed based on LLM feedback.
+Step 4: Test and Measure Outcomes
+
+We need to track energy savings, emissions reduction, and social compliance improvements
+
+'''
+
+def evaluate_results(simulation_data):
+    df = pd.DataFrame(simulation_data, columns=["Time", "Energy", "Emissions", "Compliance"])
+    
+    energy_savings = (1 - df["Energy"].mean() / 50) * 100  # Compare to threshold
+    emissions_reduction = (1 - df["Emissions"].mean() / 30) * 100
+    
+    print("\n--- Simulation Results ---")
+    print(f"Energy Savings: {energy_savings:.2f}%")
+    print(f"Emissions Reduction: {emissions_reduction:.2f}%")
+    print(f"Final Social Compliance Score: {df['Compliance'].iloc[-1]}")
+
+# Collect data for evaluation
+simulation_data = []
+env = simpy.Environment()
+
+def collect_data(env, production_line):
+    while True:
+        yield env.timeout(1)
+        simulation_data.append([env.now, production_line.energy_consumption, production_line.emissions, production_line.social_compliance_score])
+
+smart_production_line = SmartManufacturingLine(env)
+env.process(collect_data(env, smart_production_line))
+env.run(until=SIM_TIME)
+
+evaluate_results(simulation_data)
+'''
+
+This function evaluates the impact of LLM-driven control on ESG metrics.
+Step 5: Evaluate and Refine the Simulation
+
+    Compare outcomes to a targeted 20% energy reduction and 15% emission reduction.
+    Fine-tune LLM prompts to get more effective responses.
+    Optimize sensor simulation by adding more ESG parameters (e.g., water usage, carbon offsets).
+
+
+Deploy on OpenModelica for Physics-Based Simulation
+
+OpenModelica allows us to simulate energy consumption, emissions, and machine behavior with real-world equations.    
+'''
+
+
+
+
+
+'''
+1.2 Define a Basic Manufacturing Model in OpenModelica
+
+Save the following as ManufacturingPlant.mo and open it in OpenModelica.
+
+
+'''
+
+'''
+1.2 Define a Basic Manufacturing Model in OpenModelica
+
+Save the following as ManufacturingPlant.mo and open it in OpenModelica.
+
+model ManufacturingPlant
+  parameter Real maxPower = 100;   // Maximum power in kW
+  parameter Real maxEmissions = 50; // Max CO2 emissions in g/s
+  Real powerUsage;
+  Real emissions;
+  Real productionRate;
+  
+  equation
+  // Energy consumption and emissions depend on production speed
+  powerUsage = maxPower * (productionRate / 100);
+  emissions = maxEmissions * (productionRate / 100);
+  
+  // Dynamic production adjustment based on control signals
+  der(productionRate) = -0.1 * (powerUsage - 50); // Reduce if above threshold
+
+  annotation(experiment(StartTime=0, StopTime=100, Tolerance=1e-6));
+end ManufacturingPlant;
+
+This model simulates a production plant's power and emissions levels, dynamically adjusting based on constraints.
+1.3 Run the Simulation
+
+    Open OpenModelica.
+    Load ManufacturingPlant.mo.
+    Run the simulation and observe energy/emission trends
+'''
+
+'''
+
+ Integrate Reinforcement Learning for Adaptive Control
+
+Now, let's add a Q-learning-based RL agent to dynamically optimize energy usage.
+2.1 Install Required Libraries
+
+'''
+
+#implement q learning for  ESG control
+
+
+
+class ESGAgent:
+    def __init__(self, actions=[-10, -5, 0, 5, 10], alpha=0.1, gamma=0.9, epsilon=0.2):
+        self.q_table = {}
+        self.actions = actions
+        self.alpha = alpha
+        self.gamma = gamma
+        self.epsilon = epsilon
+    
+    def get_q(self, state):
+        return self.q_table.get(state, {a: 0 for a in self.actions})
+    
+    def choose_action(self, state):
+        if random.uniform(0, 1) < self.epsilon:
+            return random.choice(self.actions)
+        q_values = self.get_q(state)
+        return max(q_values, key=q_values.get)
+    
+    def update_q(self, state, action, reward, next_state):
+        q_values = self.get_q(state)
+        next_q_values = self.get_q(next_state)
+        
+        best_next_action = max(next_q_values, key=next_q_values.get)
+        q_values[action] += self.alpha * (reward + self.gamma * next_q_values[best_next_action] - q_values[action])
+        
+        self.q_table[state] = q_values
+
+# Initialize Agent
+agent = ESGAgent()
+
+# Simulate RL-Based Decision-Making
+state = (50, 30)  # (energy, emissions)
+for step in range(100):
+    action = agent.choose_action(state)
+    next_state = (max(0, state[0] + action), max(0, state[1] + action // 2))
+    
+    # Reward: minimize energy & emissions
+    reward = - (next_state[0] - 50)**2 - (next_state[1] - 30)**2
+    
+    agent.update_q(state, action, reward, next_state)
+    state = next_state
+
+print("Trained Q-Table:", agent.q_table)
+
+
+
+
+'''
+Now, the system learns over time to optimize ESG compliance by adjusting machine parameters.
+3️⃣ Use a Real-World Open-Source LLM (Llama 3, Falcon, etc.)
+
+For on-premises LLM integration, we'll use llama-cpp-python to run Llama 3 or Falcon locally.
+3.1 Install Llama 3 Locally
+
+
+'''
+
+
+
+
+'''
+Visualizing ESG Improvements Over Time
+
+Now, let's plot energy savings and emissions reductions over the simulation.
+
+
+
+'''
+from llama_cpp import Llama
+
+# Load the model
+llm = Llama(model_path="path/to/llama-3-model.gguf")
+
+# Query the model for ESG analysis
+prompt = "Analyze ESG data: energy=55, emissions=35, compliance=90. Suggest optimizations."
+response = llm(prompt)
+print("LLM Decision:", response)
+
+
+
+import matplotlib.pyplot as plt
+
+# Sample data: ESG improvements over 100 cycles
+time_steps = list(range(100))
+energy_levels = [max(30, 50 - 0.2 * t) for t in time_steps]  # Simulated energy reduction
+emission_levels = [max(20, 30 - 0.15 * t) for t in time_steps]  # Simulated emissions reduction
+
+plt.figure(figsize=(10, 5))
+plt.plot(time_steps, energy_levels, label="Energy Consumption (kWh)", color="blue")
+plt.plot(time_steps, emission_levels, label="Emissions (g CO2)", color="red")
+plt.xlabel("Time Steps")
+plt.ylabel("ESG Metrics")
+plt.title("ESG Performance Over Time")
+plt.legend()
+plt.grid()
+plt.show()
+
